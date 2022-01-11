@@ -1,7 +1,6 @@
 const mysql = require('mysql');
 const inquirer = require('inquirer');
-const { bigIntLiteral } = require('@babel/types');
-//const schema = require('./schema.sql')
+//schema = require('./schema.sql')
 
 const connection = mysql.createConnection({
     host: 'localhost',
@@ -12,12 +11,10 @@ const connection = mysql.createConnection({
 })
 
 connection.connect((err) => {
-    connection.query(
-    "CREATE DATABASE employee_db", function (err, result) {
-        if (err) throw err;
-        console.log("Database created");
-        mainMenu()
-      });
+    if (err) throw err;
+    console.log("Database created");
+    mainMenu()
+
   });
 
 function mainMenu() {
@@ -58,13 +55,12 @@ function addDepartment() {
         type: 'input',
         message: 'What is the name of the department you would like to add?'
     }).then((answer) => {
-    connection.query('INSERT INTO department SET ?', {
-        id: '',
+        const query = 'INSERT INTO department SET ?';
+         connection.query(query, {
         name: answer.addDeparmentName
     }, (err) => {
         if (err) throw err;
-        console.log('Your auction was created successfully!');
-        // re-prompt the user for if they want to bid or post
+        console.log('Your department was created successfully!');
         mainMenu()})
     })
 }
