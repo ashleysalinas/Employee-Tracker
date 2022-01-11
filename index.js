@@ -1,5 +1,7 @@
 const mysql = require('mysql');
 const inquirer = require('inquirer');
+const util = require('util')
+
 //schema = require('./schema.sql')
 
 const connection = mysql.createConnection({
@@ -16,7 +18,7 @@ connection.connect((err) => {
     mainMenu()
 
   });
-
+ connection.query = util.promisify(connection.query)
 function mainMenu() {
     inquirer.prompt({
         name: 'mainMenu',
@@ -43,7 +45,10 @@ function mainMenu() {
                 addDepartment();
                 break;
                 case 'Add role':
-                console.log("its working");
+                addRole();
+                break;
+                case 'View departments':
+                viewDepartments();
                 break;
             }
         })
@@ -56,7 +61,7 @@ function addDepartment() {
         message: 'What is the name of the department you would like to add?'
     }).then((answer) => {
         const query = 'INSERT INTO department SET ?';
-         connection.query(query, {
+        connection.query(query, {
         name: answer.addDeparmentName
     }, (err) => {
         if (err) throw err;
@@ -64,3 +69,52 @@ function addDepartment() {
         mainMenu()})
     })
 }
+
+function addRole() {
+    inquirer.prompt({
+        name: 'addRole',
+        type: 'input',
+        message: 'What is the name of the role you would like to add?'
+    },
+    {
+        name: 'addSalary',
+        type: 'input',
+        message: 'What is the salary for this role?' //add department selector
+    }).then((answer) => {
+        const query = 'INSERT INTO employee_role SET ?';
+        connection.query(query, {
+            title: answer.addRole,
+            salary: answer.addSalary
+        }, (err) => {
+            if (err) throw err;
+            console.log('Your role was created successfully!');
+            mainMenu()
+        })
+    })
+}
+
+async function viewDepartments() {
+    connection.query('SELECT * from department', (err, res) => {
+        res.forEach(({ name }) => {
+            console.log("\n");
+            console.log(name);
+        })
+    }).then(
+        confirm()
+        )
+}
+
+function confirm() {
+    inquirer.prompt({
+        name: 'confirm',
+        type: 'confirm',
+        message: 'Back to main menu?'
+    }).then((answer) => {
+        if (answer.confirm == true) {
+            mainMenu()
+        } else {
+            console.log('working')
+        }
+    })
+}
+
