@@ -1,5 +1,8 @@
 const mysql = require('mysql');
-const inquirer = require('inquirer')
+const inquirer = require('inquirer');
+const util = require('util');
+const { choices } = require('yargs');
+
 
 const connection = mysql.createConnection({
     host: 'localhost',
@@ -14,7 +17,7 @@ connection.connect((err) => {
     console.log('Welcome to the Employee Tracker app!')
     mainMenu()
 })
-
+connection.query = util.promisify(connection.query)
 function mainMenu() {
     inquirer.prompt({
         name: 'mainmenu',
@@ -34,6 +37,12 @@ function mainMenu() {
             case 'Add department':
                 addDepartment()
                 break;
+            case 'Add role':
+                addRole();
+                break;
+            case 'Add employee':
+                addEmployee();
+                break;
         }
     })
 }
@@ -52,4 +61,75 @@ function addDepartment() {
             mainMenu()
         }) 
     })
+}
+
+async function addRole() {
+    connection.query('SELECT * from department', (err, res) => {
+    inquirer.prompt([
+        {
+        name: 'roleTitle',
+        type: 'input',
+        message: 'What is the title of the new role?'
+        },
+        {
+        name: 'roleSalary',
+        type: 'input',
+        message: "What is the role's salary?"
+        },
+        {
+        name: 'roleDepartment',
+        message: 'Which department does the role belong to?',
+        type: 'list',
+        choices() {
+            if (err) throw err;
+            const deptList = []
+            res.forEach(({ name, id }) => {
+                deptList.push({ name} )
+            })
+            return deptList;
+            }
+        }
+    ]).then((answer) => {
+        connection.query('INSERT INTO employee_role SET ?', {
+            title: answer.roleTitle,
+            salary: answer.roleSalary,
+            department_id: answer.roleDepartment.id
+        }, (err) => {
+            if (err) throw err;
+            console.log('Role added successfully!')
+            mainMenu()
+        })
+    })
+    }
+)}
+
+function addEmployee() {
+    inquirer.prompt([
+        {
+            name: 'employeeFirstName',
+            type: 'input',
+            message: "What is the employee's first name?"
+        },
+        {
+            name: 'employeeLastName',
+            type: 'input',
+            message: "What is the employee's last name?"
+        },
+        {
+            name: 'employeeRole',
+            type: 'list',
+            message: "What is the employee's role?",
+            choices() {
+                const roleList = []
+                connection.query('SELECT * from employee_role', (err, res) => {
+                    console.log(res)
+                    if (err) throw err;
+                    res.forEach(({ title }) => {
+                        roleList.push({ title })
+                    })
+                })
+                return roleList
+            }
+        }
+    ])
 }
