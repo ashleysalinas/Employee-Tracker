@@ -2,6 +2,7 @@ const mysql = require('mysql');
 const inquirer = require('inquirer');
 const util = require('util');
 const { choices } = require('yargs');
+const { listenerCount } = require('process');
 
 
 const connection = mysql.createConnection({
@@ -84,16 +85,16 @@ async function addRole() {
             if (err) throw err;
             const deptList = []
             res.forEach(({ name, id }) => {
-                deptList.push({ name} )
+                deptList.push({name: name, value: id})
             })
-            return deptList;
+            return deptList
             }
         }
     ]).then((answer) => {
         connection.query('INSERT INTO employee_role SET ?', {
             title: answer.roleTitle,
             salary: answer.roleSalary,
-            department_id: answer.roleDepartment.id
+            department_id: answer.roleDepartment
         }, (err) => {
             if (err) throw err;
             console.log('Role added successfully!')
@@ -104,6 +105,7 @@ async function addRole() {
 )}
 
 function addEmployee() {
+    connection.query('SELECT * from employee_role', (err, res) => {
     inquirer.prompt([
         {
             name: 'employeeFirstName',
@@ -120,16 +122,30 @@ function addEmployee() {
             type: 'list',
             message: "What is the employee's role?",
             choices() {
+                if (err) throw err;
                 const roleList = []
-                connection.query('SELECT * from employee_role', (err, res) => {
-                    console.log(res)
-                    if (err) throw err;
-                    res.forEach(({ title }) => {
-                        roleList.push({ title })
-                    })
+                res.forEach(({ title }) => {
+                    roleList.push(title)
                 })
-                return roleList
+                return roleList;
+                }
+        },
+        ]).then((answer) => {
+            let managerID;
+            if (answer.employeeRole !== 'Manager') {
+                inquirer.prompt([
+                    {
+                        name: 'employeeManager',
+                        type: 'list'
+                    }
+                ])
+            } else {
+                connection.query('INSERT INTO employee SET ?', {
+                    first_name: answer.employeeFirstName,
+                    last_name: answer.employeeLastName,
+                    
+                })
             }
-        }
-    ])
+        })
+    })
 }
