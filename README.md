@@ -1,4 +1,5 @@
 # Employee-Tracker
+![](emT.gif)
 Week 12 - MySQL assignment for the Trilogy/Southern Methodist University Web Development Bootcamp
 
 ## About
