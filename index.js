@@ -1,8 +1,8 @@
 const mysql = require('mysql');
 const inquirer = require('inquirer');
 const util = require('util');
-const { choices } = require('yargs');
 const { listenerCount } = require('process');
+const { func } = require('prop-types');
 
 
 const connection = mysql.createConnection({
@@ -31,7 +31,8 @@ function mainMenu() {
             'View departments',
             'View roles',
             'View all employees',
-            'Update employee role'
+            'Update employee role',
+            'Quit'
         ]
     }).then((answer) => {
         switch (answer.mainmenu) {
@@ -43,6 +44,15 @@ function mainMenu() {
                 break;
             case 'Add employee':
                 addEmployee();
+                break;
+            case 'View departments':
+                viewDepartments();
+                break;
+            case 'View roles':
+                viewRoles();
+                break;
+            case 'Quit':
+                quit();
                 break;
         }
     })
@@ -172,4 +182,25 @@ function addEmployee() {
             }
         })
     })
+}
+
+async function viewDepartments() {
+    connection.query('SELECT * from department', (err,row) => {
+        if (err) throw err;
+      console.table(row)
+      mainMenu()
+    });
+}
+
+function viewRoles() {
+    connection.query('SELECT title, salary, department_id, department.name as dept_name from employee_role inner join department on employee_role.department_id=department.id', (err,row) => {
+        if (err) throw err;
+      console.table(row)
+      mainMenu()
+    });
+}
+
+function quit() {
+    console.log('Goodbye!')
+    process.exit(1)
 }
