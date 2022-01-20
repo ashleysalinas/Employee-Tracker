@@ -124,26 +124,50 @@ function addEmployee() {
             choices() {
                 if (err) throw err;
                 const roleList = []
-                res.forEach(({ title }) => {
-                    roleList.push(title)
+                res.forEach(({ title, id }) => {
+                    roleList.push({name: title, value: id})
                 })
                 return roleList;
                 }
         },
         ]).then((answer) => {
-            let managerID;
-            if (answer.employeeRole !== 'Manager') {
-                inquirer.prompt([
-                    {
-                        name: 'employeeManager',
-                        type: 'list'
-                    }
-                ])
-            } else {
+            let employeeFN = answer.employeeFirstName;
+            let employeeLN = answer.employeeLastName;
+            let employeeRI = answer.employeeRole
+            console.log(employeeFN)
+            if (answer.employeeRole == 9) {
                 connection.query('INSERT INTO employee SET ?', {
-                    first_name: answer.employeeFirstName,
-                    last_name: answer.employeeLastName,
-                    
+                    first_name: employeeFN,
+                    last_name: employeeLN,
+                    role_id: employeeRI,
+                })
+                console.log('Employee added successfully!');
+                mainMenu();
+            } else {
+                connection.query('SELECT * FROM employee WHERE role_id = "9"', (err, res) => {
+                    inquirer.prompt({
+                        name: 'employeeManager',
+                        type: 'list',
+                        message: "Who is the employee's manager?",
+                        choices() {
+                            const managerList = [];
+                            res.forEach(({ first_name, last_name, id }) => {
+                                managerList.push({name: first_name + " " + last_name, value: id})
+                            })
+                            return managerList;
+                        }
+                    }).then((answer) => {
+                        connection.query('INSERT INTO employee SET ?', {
+                            first_name: employeeFN,
+                            last_name: employeeLN,
+                            role_id: employeeRI,
+                            manager_id:answer.employeeManager,
+                        }
+                        )
+                        console.log("Employee added successfully!")
+                        mainMenu() 
+                    }
+                    )
                 })
             }
         })
