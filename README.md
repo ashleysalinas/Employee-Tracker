@@ -14,7 +14,9 @@ This project was created for Week 12 - MySQL of the Trilogy/Southern Methodist U
 ## Getting Started
   Prerequisites:
   * A familiarity with MySQL and MySQL Work Bench (used to view your database). Information on this topic can be found <a href="https://www.mysqltutorial.org/">here</a>.
-   Step 1. Clone the repo
+   
+  
+  Step 1. Clone the repo
   ``` git clone https://github.com/ashleysalinas/Employee-Tracker.git ```
   
   Step 2. CD into local copy folder 
