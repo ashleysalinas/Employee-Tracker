@@ -1,7 +1,7 @@
 const mysql = require('mysql');
 const inquirer = require('inquirer');
 const util = require('util');
-const { listenerCount } = require('process');
+const { listenerCount, title } = require('process');
 const { func } = require('prop-types');
 
 
@@ -53,6 +53,9 @@ function mainMenu() {
                 break;
             case 'View all employees':
                 viewEmployees();
+                break;
+            case 'Update employee role':
+                updateEmployee();
                 break;
             case 'Quit':
                 quit();
@@ -209,6 +212,49 @@ function viewEmployees() {
         mainMenu()
     })
 }
+
+function updateEmployee() {
+    connection.query('SELECT * from employee', (err, res) => {
+    inquirer.prompt(
+        {
+        name: 'whichEmployee',
+        message: "Which employee would you like to update?",
+        type: "list",
+        choices() {
+            const employeeList = [];
+            res.forEach(({ first_name, last_name, id}) => {
+                employeeList.push({ name: first_name + " " + last_name, value: id})
+            })
+            return employeeList;
+            }
+        },
+    ).then((answer) => {
+        let employeeID = answer.whichEmployee;
+        connection.query('SELECT * from employee_role', (err,res) => {
+            inquirer.prompt({
+                name: 'whichRole',
+                message: "Which of the following is the employee's new role?",
+                type: 'list',
+                choices() {
+                    const roleList = []
+                    res.forEach(({ title, id }) => {
+                        roleList.push({ name: title, value: id})
+                    })
+                    return roleList
+                }
+            }
+            ).then((answer) => {
+                connection.query(`UPDATE employee SET role_id = ${answer.whichRole} WHERE id = ${employeeID}`, (err) => {
+                    if (err) throw err;
+                    console.log('Employee status updated!')
+                    mainMenu();
+                });
+        });
+    });
+    });
+    })
+}
+
 function quit() {
     console.log('Goodbye!')
     process.exit(1)
