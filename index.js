@@ -51,6 +51,9 @@ function mainMenu() {
             case 'View roles':
                 viewRoles();
                 break;
+            case 'View all employees':
+                viewEmployees();
+                break;
             case 'Quit':
                 quit();
                 break;
@@ -200,6 +203,12 @@ function viewRoles() {
     });
 }
 
+function viewEmployees() {
+    connection.query('Select first_name, last_name, role_id as role, manager_id as manager,employee_role.title as role from employee inner join employee_role on employee.role_id=employee_role.id', (err, row) => {
+        console.table(row)
+        mainMenu()
+    })
+}
 function quit() {
     console.log('Goodbye!')
     process.exit(1)
