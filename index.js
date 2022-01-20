@@ -2,15 +2,15 @@ const mysql = require('mysql');
 const inquirer = require('inquirer');
 const util = require('util');
 const { listenerCount, title } = require('process');
-const { func } = require('prop-types');
+require('dotenv').config()
 
 
 const connection = mysql.createConnection({
     host: 'localhost',
     port: 3306,
-    user: 'root',
-    password: 'whippersnapper3',
-    database: 'employees_db' // change with .env
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME
 });
 
 connection.connect((err) => {
